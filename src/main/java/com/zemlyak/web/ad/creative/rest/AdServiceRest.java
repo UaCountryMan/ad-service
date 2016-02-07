@@ -23,7 +23,12 @@ public class AdServiceRest {
     @RequestMapping(value="/rest/ad/get", method=RequestMethod.POST)
     public CreativesResponse getCreatives(@RequestBody CreativesRequest request){
         List<CreativesDto> dtoList = creativeService.getCreatives(request.limit, request.os, request.country);
-        /*List<CreativesDto> dtoList = Arrays.asList(new CreativesDto(1,"some description","http://someDomain.ru"));*/
+        return new CreativesResponse(dtoList);
+    }
+
+    @RequestMapping(value="/rest/optimized/ad/get", method=RequestMethod.POST)
+    public CreativesResponse getCreativesOptimized(@RequestBody CreativesRequest request){
+        List<CreativesDto> dtoList = creativeService.getCreativesOptimized(request.limit, request.os, request.country);
         return new CreativesResponse(dtoList);
     }
 }

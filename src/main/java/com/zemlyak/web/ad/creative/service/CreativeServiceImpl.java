@@ -11,8 +11,12 @@ import com.zemlyak.web.ad.creative.Creative;
 import com.zemlyak.web.ad.creative.CreativeService;
 import com.zemlyak.web.ad.creative.CreativesDao;
 import com.zemlyak.web.ad.creative.CreativesDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CreativeServiceImpl implements CreativeService {
+    private static final Logger LOG = LoggerFactory.getLogger(CreativeServiceImpl.class);
+
     private static final Random RANDOM = new Random();
     private static final Function<Creative, CreativesDto> creativeToDtoFunction = new CreativeToDtoFunction();
     
@@ -28,24 +32,34 @@ public class CreativeServiceImpl implements CreativeService {
     @Override
     public List<CreativesDto> getCreatives(int limit, String os, String country){
         List<Creative> creativeList = creativesDao.getCreativeByOsAndCountry(os, country);
-        
-        System.out.println("creativeList size: " + creativeList.size());
+        if(LOG.isDebugEnabled()){
+            LOG.debug("creativeList for os '" + os + "' and country '" + country + "' size: " + creativeList.size());
+        }
         
         List<Creative> limitedCreativeList = reduceByLimit(limit, creativeList);
         return convertToDto(limitedCreativeList);
     }
 
-    public List<Creative> reduceByLimit(int limit, List<Creative> creativeList){
+    @Override
+    public List<CreativesDto> getCreativesOptimized(int limit, String os, String country) {
+        List<CreativesDto> creativeDtoList = creativesDao.getCreativeDtoByOsAndCountry(os, country);
+        if(LOG.isDebugEnabled()){
+            LOG.debug("creativesDtoList for os '" + os + "' and country '" + country + "' size: " + creativeDtoList.size());
+        }
+        return reduceByLimit(limit, creativeDtoList);
+    }
+
+    public <T> List<T> reduceByLimit(int limit, List<T> creativeList){
         if(creativeList == null || creativeList.size() <= limit){
-            List<Creative> limitedList = creativeList!=null ? creativeList : Collections.<Creative>emptyList();
+            List<T> limitedList = creativeList!=null ? creativeList : Collections.<T>emptyList();
             return new ArrayList<>(limitedList);
         }
         
         int listSize = creativeList.size();
-        List<Creative> limitedCreativeList = new ArrayList<>(limit);
+        List<T> limitedCreativeList = new ArrayList<>(limit);
         for(int i = 0; i < limit; i++){
             int index = getUnsignedRandomInt(RANDOM) % listSize;
-            Creative creative = creativeList.get(index);
+            T creative = creativeList.get(index);
             limitedCreativeList.add(creative);
         }
         return limitedCreativeList;
