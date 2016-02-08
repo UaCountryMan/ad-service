@@ -1,9 +1,6 @@
 package com.zemlyak.web.ad.creative.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,7 +32,6 @@ public class CreativeServiceImpl implements CreativeService {
         if(LOG.isDebugEnabled()){
             LOG.debug("creativeList for os '" + os + "' and country '" + country + "' size: " + creativeList.size());
         }
-        
         List<Creative> limitedCreativeList = reduceByLimit(limit, creativeList);
         return convertToDto(limitedCreativeList);
     }
@@ -57,8 +53,12 @@ public class CreativeServiceImpl implements CreativeService {
         
         int listSize = creativeList.size();
         List<T> limitedCreativeList = new ArrayList<>(limit);
-        for(int i = 0; i < limit; i++){
+        Set<Integer> indexSet = new HashSet<>();
+        while(limitedCreativeList.size() < limit){
             int index = getUnsignedRandomInt(RANDOM) % listSize;
+            if(!indexSet.add(index)){
+                continue;
+            }
             T creative = creativeList.get(index);
             limitedCreativeList.add(creative);
         }
